@@ -4,7 +4,7 @@ import Landing from '../components/landing';
 import { Skeleton } from '@repo/ui/components/ui/skeleton';
 
 function Main() {
-  return <div>Main</div>;
+  return <div>Main //working on homepage</div>;
 }
 
 export default function Home() {
