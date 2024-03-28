@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "turbo": "latest"
+    "turbo": "^1.13.0"
   },
   "engines": {
     "node": ">=18"
@@ -22,5 +22,9 @@
   ],
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "anchor": "^1.4.1",
+    "avm": "^0.0.200002"
+  }
 }
