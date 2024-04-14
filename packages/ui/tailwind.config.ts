@@ -1,15 +1,13 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from "tailwindcss"
+
+const config = {
   darkMode: ["class"],
   content: [
-    '../../packages/ui/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-    './screens/**/*{.ts,tsx}',
-  ],
+	],
   prefix: "",
   theme: {
     container: {
@@ -77,4 +75,6 @@ module.exports = {
     },
   },
   plugins: [],
-}
+} satisfies Config
+
+export default config
