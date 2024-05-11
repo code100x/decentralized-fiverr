@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int     @id @default(autoincrement())
+  address       String  @unique
+  tasks         Task[]
+  payouts       Payouts[]
+}
+
+model Worker {
+  id                  Int     @id @default(autoincrement())
+  address             String  @unique
+  submissions         Submission[]
+  pending_amount      Int    // amount in lamports (* 10^9)
+  locked_amount       Int
+}
+
+model Task {
+  id           Int       @id @default(autoincrement())
+  title        String?   @default("Select the most clickable thumbnail")
+  options      Option[]
+  user_id      Int
+  signature    String
+  amount       Int
+  done         Boolean @default(false)
+  user         User    @relation(fields: [user_id], references: [id])
+  submissions  Submission[]
+}
+
+model Option {
+  id          Int        @id @default(autoincrement())
+  image_url   String
+  task_id     Int
+  task        Task       @relation(fields: [task_id], references: [id])
+  submissions Submission[]
+}
+
+model Submission {
+  id         Int     @id @default(autoincrement())
+  worker_id  Int
+  worker     Worker @relation(fields: [worker_id], references: [id])
+  option_id  Int
+  option     Option @relation(fields: [option_id], references: [id])
+  task_id    Int
+  task       Task   @relation(fields: [task_id], references: [id])
+  amount     Int
+  @@unique([worker_id, task_id])
+}
+
+model Payouts {
+  id            Int     @id @default(autoincrement())
+  user_id       Int
+  user          User    @relation(fields: [user_id], references: [id])
+  amount        Int
+  signature     String
+  status        TxnStatus
+}
+
+enum TxnStatus {
+  Processing
+  Success
+  Failure
+}
