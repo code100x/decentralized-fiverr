@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - 5959:5432
+    restart: always
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: repo
+    volumes:
+      - db:/var/lib/postgresql/data
+  queues:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning 
+    volumes:
+      - queues:/var/lib/redies/data
+volumes:
+  db:
+    driver: local
+  queues:
+    driver: local
