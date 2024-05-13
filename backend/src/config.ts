@@ -33,8 +33,11 @@ export const DISTRIBUTED_SERVER_ENDPOINTS = [
   SERVER_5_ENDPOINT,
 ];
 
-export const REDIS_URI = process.env.REDIS_URI ?? "redis://127.0.0.1:6379";
 export const RPC_URL = process.env.RPC_URL ?? "https://api.devnet.solana.com";
 
-export const PARENT_WALLET_PUBLIC_KEY =
-  process.env.PARENT_WALLET_PUBLICK_KEY ?? "parent-wallet-public-key";
+export const PARENT_WALLET_PUBLIC_KEY = process.env.PARENT_WALLET_PUBLIC_KEY;
+
+export const REGION = process.env.REGION ?? "us-east-1";
+export const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID ?? "";
+export const ACCESS_SECRET = process.env.ACCESS_SECRET ?? "";
+export const BUCKET_NAME = process.env.BUCKET_NAME ?? "";

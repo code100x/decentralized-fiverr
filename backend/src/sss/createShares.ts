@@ -16,3 +16,6 @@ export function createShares(privateKey: string) {
   });
   fs.writeFileSync("./src/sss/.env", data);
 }
+
+// Put your private key here, run npm run generate:shares, take each share and store in different server,
+// createShares("your-private-key-here");

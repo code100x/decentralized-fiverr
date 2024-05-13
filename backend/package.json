@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc -b && node dist/index.js",
+    "generate:shares": "tsc -b && node dist/sss/createShares.js"
+    
   },
   "keywords": [],
   "author": "",

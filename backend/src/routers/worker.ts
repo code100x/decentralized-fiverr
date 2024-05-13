@@ -5,7 +5,6 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import nacl from "tweetnacl";
 import {
-  REDIS_URI,
   TOTAL_DECIMALS,
   TOTAL_SUBMISSIONS,
   WORKER_JWT_SECRET,
@@ -18,7 +17,9 @@ import { process_Queue } from "./_process-payout";
 const prismaClient = new PrismaClient();
 const router = Router();
 
-const payoutQueue = new Bull("payoutQueue", REDIS_URI);
+const payoutQueue = new Bull("payoutQueue", {
+  redis: { port: 6379, host: "127.0.0.1" },
+});
 payoutQueue.process(process_Queue);
 router.post("/payout", workerMiddleware, async (req, res) => {
   // @ts-ignore

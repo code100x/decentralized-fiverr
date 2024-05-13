@@ -42,6 +42,9 @@ export const process_Queue = async (job: Job, done: DoneCallback) => {
     status: $Enums.TxnStatus;
   } = null;
   try {
+    if (!PARENT_WALLET_PUBLIC_KEY) {
+      throw new Error("Set parent public key");
+    }
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: new PublicKey(PARENT_WALLET_PUBLIC_KEY),
