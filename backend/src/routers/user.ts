@@ -37,22 +37,12 @@ const prismaClient = new PrismaClient();
 
 router.get("/task", authMiddleware, async (req, res) => {
   // @ts-ignore
-  const ti: string = req.query.taskId;
+  const taskId: string = req.query.taskId;
   // @ts-ignore
-  const ui: string = req.userId;
-
-  const data = z
-    .object({
-      taskId: z.string(),
-      userId: z.string(),
-    })
-    .safeParse({ taskId: ti, userId: ui });
-  if (!data.success) {
-    return res.status(411).json({ message: "Send valid Inputs" });
+  const userId: string = req.userId;
+  if(!taskId || !userId){
+    return res.status(411).json({message:"Send task Id"});;
   }
-
-  const { taskId, userId } = data.data;
-
   const taskDetails = await prismaClient.task.findFirst({
     where: {
       user_id: Number(userId),
