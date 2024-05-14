@@ -5,19 +5,15 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 async function getTaskDetails(taskId: string) {
-  try {
-    const response = await axios.get(
-      `${BACKEND_URL}/v1/user/task?taskId=${taskId}`,
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.log(error);
-  }
+  const response = await axios.get(
+    `${BACKEND_URL}/v1/user/task?taskId=${taskId}`,
+    {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    }
+  );
+  return response.data;
 }
 
 export default function Page({
@@ -25,6 +21,8 @@ export default function Page({
 }: {
   params: { taskId: string };
 }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<
     Record<
       string,
@@ -46,24 +44,40 @@ export default function Page({
         setResult(data.result);
         setTaskDetails(data.taskDetails);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        setError("Unauthorized");
+      });
+
+    setLoading(false);
   }, [taskId]);
 
   return (
     <div>
       <Appbar />
-      <div className="text-2xl pt-20 flex justify-center">
-        {taskDetails.title}
-      </div>
-      <div className="flex justify-center pt-8">
-        {Object.keys(result || {}).map((taskId) => (
-          <Task
-            key={taskId}
-            imageUrl={result[taskId].option.imageUrl}
-            votes={result[taskId].count}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="h-screen flex justify-center flex-col">
+          <div className="w-full flex justify-center text-2xl">Loading...</div>
+        </div>
+      ) : error ? (
+        <div className="h-screen flex justify-center flex-col">
+          <div className="w-full flex justify-center text-2xl">{error}</div>
+        </div>
+      ) : (
+        <>
+          <div className="text-2xl pt-20 flex justify-center">
+            {taskDetails.title}
+          </div>
+          <div className="flex justify-center pt-8">
+            {Object.keys(result || {}).map((taskId) => (
+              <Task
+                key={taskId}
+                imageUrl={result[taskId].option.imageUrl}
+                votes={result[taskId].count}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

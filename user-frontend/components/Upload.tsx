@@ -5,14 +5,21 @@ import { BACKEND_URL, NEXT_PUBLIC_PARENT_WALLET_ADDRESS } from "@/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { toast } from "sonner";
+import { WalletAdapterProps } from "@solana/wallet-adapter-base";
 
-export const Upload = () => {
+export const Upload = ({
+  publicKey,
+  sendTransaction,
+}: {
+  publicKey: PublicKey | null;
+  sendTransaction: WalletAdapterProps["sendTransaction"];
+}) => {
   const [images, setImages] = useState<string[]>([]);
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sig, setSig] = useState<string | null>(null);
-  const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const router = useRouter();
 
@@ -22,6 +29,7 @@ export const Upload = () => {
       return;
     }
     setLoading(true);
+    const tl = toast.loading("Submiting task to workers");
     try {
       const response = await axios.post(
         `${BACKEND_URL}/v1/user/task`,
@@ -38,34 +46,56 @@ export const Upload = () => {
           },
         }
       );
+      toast.dismiss(tl);
+      toast.success("Successfully submitted the task", {
+        description: `TASK ID: ${response.data.id}`,
+      });
       router.push(`/task/${response.data.id}`);
     } catch (error) {
+      toast.dismiss(tl);
+      toast.error((error as Error).message);
       console.log(error);
     }
+
     setLoading(false);
   }
   async function makePayment() {
     if (!publicKey || !sendTransaction) {
       return;
     }
+
     setLoading(true);
-    if (!NEXT_PUBLIC_PARENT_WALLET_ADDRESS) {
-      throw new Error("Set parent wallet address");
-    }
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: new PublicKey(NEXT_PUBLIC_PARENT_WALLET_ADDRESS),
-        lamports: 100000000,
-      })
-    );
+    let tl;
     try {
+      if (!NEXT_PUBLIC_PARENT_WALLET_ADDRESS) {
+        throw new Error("Set parent wallet address");
+      }
+      if (!title) {
+        throw new Error("Add Title");
+      }
+      if (images.length < 2) {
+        throw new Error("Upload Minimum Two Images");
+      }
+      tl = toast.loading("Making Payement...");
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(NEXT_PUBLIC_PARENT_WALLET_ADDRESS),
+          lamports: 100000000,
+        })
+      );
       const signature = await sendTransaction(transaction, connection, {
         preflightCommitment: "confirmed",
         skipPreflight: false,
       });
+      toast.dismiss(tl);
+      toast.success("Payment successful", {
+        description: `Signature: ${signature}`,
+      });
       setSig(signature);
     } catch (error) {
+      toast.dismiss(tl);
+      toast.error((error as Error).message);
       console.log(error);
     }
     setLoading(false);
