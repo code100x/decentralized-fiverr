@@ -6,7 +6,7 @@ import { useMemo } from "react";
 const WalletButton = dynamic(() => import("./WalletButton"), { ssr: false });
 
 export const Appbar = () => {
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
   const pubKey = useMemo(() => {
     const walletAddress = publicKey?.toString();
     return walletAddress?.slice(0, 4) + ".." + walletAddress?.slice(-4);
@@ -20,9 +20,11 @@ export const Appbar = () => {
         <button className="m-2 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
           <Link href={"/task/all"}>All Tasks</Link>
         </button>
-        <div className="m-2 text-white cursor-default bg-gray-800  focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800  dark:focus:ring-gray-700 dark:border-gray-700">
-          {pubKey}
-        </div>
+        {connected && (
+          <div className="m-2 text-white cursor-default bg-gray-800  focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800  dark:focus:ring-gray-700 dark:border-gray-700">
+            {pubKey}
+          </div>
+        )}
         <WalletButton></WalletButton>
       </div>
     </div>
