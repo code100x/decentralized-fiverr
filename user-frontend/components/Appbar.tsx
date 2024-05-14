@@ -1,42 +1,29 @@
 "use client";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect } from "react";
-import axios from "axios";
-import { BACKEND_URL } from "@/utils";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useMemo } from "react";
 const WalletButton = dynamic(() => import("./WalletButton"), { ssr: false });
 
 export const Appbar = () => {
-  const { publicKey, signMessage } = useWallet();
-
-  async function signAndSend() {
-    if (!publicKey || !signMessage || !window) {
-      return;
-    }
-    if (window.localStorage.getItem("token")) {
-      return;
-    }
-    const message = new TextEncoder().encode("Sign into mechanical turks");
-    const signature = await signMessage(message);
-    console.log(signature.toString());
-    console.log(publicKey.toString());
-    const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
-      signature: signature.toString(),
-      publicKey: publicKey.toString(),
-    });
-
-    localStorage.setItem("token", response.data.token);
-  }
-
-  useEffect(() => {
-    signAndSend();
+  const { publicKey } = useWallet();
+  const pubKey = useMemo(() => {
+    const walletAddress = publicKey?.toString();
+    return walletAddress?.slice(0, 4) + ".." + walletAddress?.slice(-4);
   }, [publicKey]);
-
   return (
     <div className="flex justify-between border-b pb-2 pt-2">
-      <div className="text-2xl pl-4 flex justify-center pt-3">Turkify</div>
-      <div className="text-xl pr-4 pb-2">
-        <WalletButton publicKey={publicKey?.toString()}></WalletButton>
+      <div className="text-2xl pl-4 flex justify-center pt-3 cursor-pointer">
+        <Link href={"/"}>Turkify</Link>
+      </div>
+      <div className="text-xl pr-4 pb-2 flex items-center">
+        <button className="m-2 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+          <Link href={"/task/all"}>All Tasks</Link>
+        </button>
+        <div className="m-2 text-white cursor-default bg-gray-800  focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800  dark:focus:ring-gray-700 dark:border-gray-700">
+          {pubKey}
+        </div>
+        <WalletButton></WalletButton>
       </div>
     </div>
   );
