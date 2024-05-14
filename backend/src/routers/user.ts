@@ -35,13 +35,72 @@ const router = Router();
 
 const prismaClient = new PrismaClient();
 
+router.get("/task/all", authMiddleware, async (req, res) => {
+  // @ts-ignore
+  const userId = Number(req.userId);
+  const tasks = await prismaClient.task.findMany({
+    where: { user_id: userId },
+    include: { options: true, submissions: { include: { option: true } } },
+  });
+  const tasksResult: {
+    taskId: number;
+    title: string;
+    signature: string;
+    done: boolean;
+    options: Record<
+      string,
+      {
+        count: number;
+        imageUrl: string;
+      }
+    >;
+  }[] = [];
+  tasks.forEach((task) => {
+    const taskOptions: Record<
+      string,
+      {
+        count: number;
+        imageUrl: string;
+      }
+    > = {};
+    task.options.forEach((option) => {
+      // initialize each task's options with count 0 and set respective images
+      taskOptions[option.id] = {
+        count: 0,
+        imageUrl: option.image_url,
+      };
+    });
+    const filteredTask = {
+      taskId: task.id,
+      done: task.done,
+      signature: task.signature,
+      title: task.title ?? "",
+      options: taskOptions,
+    };
+    tasksResult.push(filteredTask),
+      task.submissions.forEach((s) => {
+        filteredTask.options[s.option_id].count++; // for submitted option increase the count
+      });
+  });
+  return res.status(200).json(tasksResult);
+});
+// {
+//   title:"",
+//   signature:"",
+//   done:""
+//   taskId:"",
+//   options:[{
+//     optionId: "",
+//     count: "",
+//     image:""
+//   }]
 router.get("/task", authMiddleware, async (req, res) => {
   // @ts-ignore
   const taskId: string = req.query.taskId;
   // @ts-ignore
   const userId: string = req.userId;
-  if(!taskId || !userId){
-    return res.status(411).json({message:"Send task Id"});;
+  if (!taskId || !userId) {
+    return res.status(411).json({ message: "Send task Id" });
   }
   const taskDetails = await prismaClient.task.findFirst({
     where: {
@@ -209,6 +268,16 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: (error as Error).message });
   }
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+  // @ts-ignore
+  const userId = Number(req.userId);
+  const user = prismaClient.user.findFirst({ where: { id: userId } });
+  if (!user) {
+    return res.json({ message: "User does not exist" });
+  }
+  return res.json(user);
 });
 
 router.post("/signin", async (req, res) => {
