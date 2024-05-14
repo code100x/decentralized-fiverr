@@ -1,13 +1,15 @@
 "use client";
-import React, { FC, useMemo } from 'react';
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import React, { FC, useMemo } from "react";
 import {
-    WalletModalProvider
-} from '@solana/wallet-adapter-react-ui';
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { Appbar } from "@/components/Appbar";
 
 // Default styles that can be overridden by your app
-require('@solana/wallet-adapter-react-ui/styles.css');
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 export default function RootLayout({
   children,
@@ -19,18 +21,16 @@ export default function RootLayout({
   // You can also provide a custom RPC endpoint.
   const endpoint = "https://api.devnet.solana.com";
 
-  const wallets = useMemo(
-      () => [],
-      [network]
-  );
+  const wallets = useMemo(() => [], [network]);
 
-    return (
+  return (
     <ConnectionProvider endpoint={endpoint}>
-        <WalletProvider wallets={wallets} autoConnect>
-            <WalletModalProvider>
-                {children}
-            </WalletModalProvider>
-        </WalletProvider>
+      <WalletProvider wallets={wallets} autoConnect>
+        <WalletModalProvider>
+          <Appbar />
+          {children}
+        </WalletModalProvider>
+      </WalletProvider>
     </ConnectionProvider>
   );
 }

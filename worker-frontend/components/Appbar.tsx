@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { ToastLTSBalance } from "./Balance";
 import { useWallet } from "@solana/wallet-adapter-react";
+import Link from "next/link";
 const WalletButton = dynamic(() => import("./WalletButton"), { ssr: false });
 
 export const Appbar = () => {
@@ -21,6 +22,9 @@ export const Appbar = () => {
         Turkify
       </div>
       <div className="text-xl pr-4 flex">
+        <Link href={"/payout"} className="m-2 text-white bg-gray-800 hover:bg-gray-900 hover:underline focus:outline-none focus:ring-1 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+          My Payouts
+        </Link>
         <button
           onClick={async () => {
             await ToastLTSBalance();

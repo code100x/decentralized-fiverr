@@ -69,6 +69,15 @@ router.post("/payout", workerMiddleware, async (req, res) => {
   }
 });
 
+router.get("/payout", workerMiddleware, async (req, res) => {
+  // @ts-ignore
+  const userId = Number(req.userId);
+  const payouts = await prismaClient.payouts.findMany({
+    where: { worker_id: userId },
+  });
+  return res.json(payouts);
+});
+
 router.get("/balance", workerMiddleware, async (req, res) => {
   // @ts-ignore
   const userId: string = req.userId;
