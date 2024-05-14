@@ -25,19 +25,21 @@ export function recoverPrivateKey(sharesArray: Array<Uint8Array | number[]>) {
 
 export async function fetchShares() {
   const sharesArray = [] as Array<number[]>;
-
-  // makes parallel request
-  await Promise.all(
-    DISTRIBUTED_SERVER_ENDPOINTS.map(async (endpoint) => {
-      if (sharesArray.length >= THRESHOLD) return;
-      const res = await axios.get(`${endpoint}/share`);
-      const share = res.data.share as string;
-      if (share) {
-        const shareArray = share.split(",").map(Number);
-        sharesArray.push(shareArray);
-        return shareArray;
-      }
-    })
+  const requests = DISTRIBUTED_SERVER_ENDPOINTS.map((endpoint) =>
+    axios
+      .get(`${endpoint}/share`)
+      .then((res) => {
+        const share = res.data.share as string;
+        if (share) {
+          const shareArray = share.split(",").map(Number);
+          sharesArray.push(shareArray);
+        }
+      })
+      .catch((err) => console.log(err.message))
   );
-  return sharesArray;
+
+  const a = await Promise.all(requests).then(() => {
+    return sharesArray;
+  });
+  return a;
 }
