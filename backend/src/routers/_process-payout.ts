@@ -1,4 +1,4 @@
-import { $Enums, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import {
   Connection,
   PublicKey,
@@ -14,89 +14,60 @@ const prismaClient = new PrismaClient();
 const connection = new Connection(RPC_URL);
 
 export const process_Queue = async (job: Job, done: DoneCallback) => {
-  const { userId } = job.data as {
-    userId: number;
+  const { workerId } = job.data as {
+    workerId: number;
   };
-  const worker = (await prismaClient.worker.findUnique({
-    where: { id: userId },
-  }))!;
-  const amount = worker.pending_amount;
-  await prismaClient.worker.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      pending_amount: {
-        decrement: amount,
-      },
-      locked_amount: {
-        increment: amount,
-      },
-    },
-  });
-  let payout: null | {
-    id: number;
-    user_id: number;
-    amount: number;
-    signature: string;
-    status: $Enums.TxnStatus;
-  } = null;
-  try {
-    if (!PARENT_WALLET_PUBLIC_KEY) {
-      throw new Error("Set parent public key");
-    }
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(PARENT_WALLET_PUBLIC_KEY),
-        toPubkey: new PublicKey(worker.address),
-        lamports: (1000_000_000 * amount) / TOTAL_DECIMALS,
-      })
-    );
-
-    const keypair = recoverPrivateKey(await fetchShares());
-    const signature = await connection.sendTransaction(transaction, [keypair], {
-      skipPreflight: true, // skip the preflight checks just send the transaction
+  console.log("\n\nInitializing Transaction");
+  await prismaClient.$transaction(async (tx) => {
+    const worker = await tx.worker.findUnique({
+      where: { id: workerId },
     });
-    const p = await prismaClient.payouts.create({
+
+    let signature: string;
+    try {
+      if (!worker) {
+        throw new Error("Worker Not Found");
+      }
+      if (!PARENT_WALLET_PUBLIC_KEY) {
+        throw new Error("Set parent public key");
+      }
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(PARENT_WALLET_PUBLIC_KEY),
+          toPubkey: new PublicKey(worker.address),
+          lamports: (1000_000_000 * worker.locked_amount) / TOTAL_DECIMALS,
+        })
+      );
+
+      const keypair = recoverPrivateKey(await fetchShares());
+      // long running
+      signature = await connection.sendTransaction(transaction, [keypair], {
+        preflightCommitment: "confirmed",
+        skipPreflight: false,
+      });
+      console.log(
+        `User ${workerId} was payed, ${
+          (1000_000_000 * worker.locked_amount) / TOTAL_DECIMALS
+        } lamports, signature: ${signature}`
+      );
+    } catch (error) {
+      console.log((error as Error).message);
+      return;
+    }
+    await tx.worker.update({
+      where: { id: workerId },
+      data: { locked_amount: { decrement: worker.locked_amount } },
+    });
+    await tx.payouts.create({
       data: {
-        user_id: userId,
-        amount: amount,
-        status: "Processing",
+        worker_id: workerId,
+        amount: worker.locked_amount,
+        status: "Success",
         signature: signature,
       },
     });
-    payout = p;
-
-    await axios.post(`${SWEEPER_WORKER_ENDPOINT}/sweep-tx`, {
-      payout,
-    });
-    done(null, { p });
-  } catch (error) {
-    console.log(`INTERNAL_SERVER_ERROR: ${(error as Error).message} `);
-    // send money back from locked to pending stage and make user sign again
-    await prismaClient.$transaction(async (tx) => {
-      await prismaClient.worker.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          pending_amount: {
-            increment: amount,
-          },
-          locked_amount: {
-            decrement: amount,
-          },
-        },
-      });
-      if (payout) {
-        await prismaClient.payouts.update({
-          where: { id: payout.id },
-          data: {
-            status: "Failure",
-          },
-        });
-      }
-    });
-    done(new Error((error as Error).message));
-  }
+    console.log(
+      "Worker's locked amount and payout is cleared, Transaction Successful.\n\n"
+    );
+  });
 };
