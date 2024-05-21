@@ -27,6 +27,7 @@ function handleAuth(
     })
     .catch(async (err) => {
       if (err instanceof AxiosError && err.response?.status == 403) {
+        console.log("Please login");
         const message = new TextEncoder().encode("Sign into mechanical turks");
         const signature = await signMessage(message);
         console.log(signature);
