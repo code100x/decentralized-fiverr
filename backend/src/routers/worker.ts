@@ -197,7 +197,7 @@ router.post("/signin", async (req, res) => {
   const { success, data } = z
     .object({
       publicKey: z.string(),
-      signature: z.string(),
+      signature: z.any(),
     })
     .safeParse(req.body);
   if (!success) {
@@ -205,14 +205,13 @@ router.post("/signin", async (req, res) => {
   }
   const { publicKey, signature } = data;
   try {
-    const sig = new Uint8Array(signature.split(",").map(Number));
     const message = new TextEncoder().encode(
       "Sign into mechanical turks as a worker"
     );
 
     const result = nacl.sign.detached.verify(
       message,
-      sig,
+      new Uint8Array(signature.data),
       new PublicKey(publicKey).toBytes()
     );
 

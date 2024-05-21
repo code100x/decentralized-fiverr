@@ -32,10 +32,10 @@ function handleAuth(
           "Sign into mechanical turks as a worker"
         );
         const signature = await signMessage(message);
-        console.log(signature.toString());
+        console.log(signature);
         console.log(publicKey.toString());
         const response = await axios.post(`${BACKEND_URL}/v1/worker/signin`, {
-          signature: signature.toString(),
+          signature: signature,
           publicKey: publicKey.toString(),
         });
 
