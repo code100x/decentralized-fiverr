@@ -197,7 +197,7 @@ router.post("/signin", async (req, res) => {
   const { success, data } = z
     .object({
       publicKey: z.string(),
-      signature: z.any(),
+      signature: z.array(z.number()),
     })
     .safeParse(req.body);
   if (!success) {
@@ -211,7 +211,7 @@ router.post("/signin", async (req, res) => {
 
     const result = nacl.sign.detached.verify(
       message,
-      new Uint8Array(signature.data),
+      new Uint8Array(signature),
       new PublicKey(publicKey).toBytes()
     );
 

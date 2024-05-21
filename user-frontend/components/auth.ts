@@ -30,11 +30,11 @@ function handleAuth(
         console.log("Please login");
         const message = new TextEncoder().encode("Sign into mechanical turks");
         const signature = await signMessage(message);
-        console.log(signature);
+        console.log(Array.from(signature));
         console.log(publicKey.toString());
 
         const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
-          signature: signature,
+          signature: Array.from(signature),
           publicKey: publicKey.toString(),
         });
 
