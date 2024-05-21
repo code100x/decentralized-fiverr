@@ -2,17 +2,16 @@
 import { Appbar } from "@/components/Appbar";
 import { Hero } from "@/components/Hero";
 import { Upload } from "@/components/Upload";
-import { UploadImage } from "@/components/UploadImage";
-import Image from "next/image";
-import { useState } from "react";
+import { useWalletSession } from "@/components/auth";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export default function Home() {
-
+  const { publicKey, sendTransaction } = useWallet();
   return (
     <main>
       <Appbar />
       <Hero />
-      <Upload />
+      <Upload publicKey={publicKey} sendTransaction={sendTransaction} />
     </main>
   );
 }

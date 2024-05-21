@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  server-1:
+    build: ./server-1
+    container_name: server-1
+    command: node index.js
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./server-1/.env
+  server-2:
+    build: ./server-2
+    container_name: server-2
+    command: node index.js
+    ports:
+      - "7070:7070"
+    env_file:
+      - ./server-2/.env
+  server-3:
+    build: ./server-3
+    container_name: server-3
+    command: node index.js
+    ports:
+      - "6060:6060"
+    env_file:
+      - ./server-3/.env
+  server-4:
+    build: ./server-4
+    container_name: server-4
+    command: node index.js
+    ports:
+      - "5050:5050"
+    env_file:
+      - ./server-4/.env
+  server-5:
+    build: ./server-5
+    container_name: server-5
+    command: node index.js
+    ports:
+      - "4040:4040"
+    env_file:
+      - ./server-5/.env

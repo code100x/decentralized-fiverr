@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc -b && node dist/index.js",
+    "generate:shares": "tsc -b && node dist/sss/createShares.js"
+    
   },
   "keywords": [],
   "author": "",
@@ -18,11 +20,15 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
+    "axios": "^1.6.8",
     "bs58": "^5.0.0",
+    "bull": "^4.12.3",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.13.0",
+    "shamirs-secret-sharing": "^2.0.0",
     "tweetnacl": "^1.0.3",
     "zod": "^3.23.8"
   }
